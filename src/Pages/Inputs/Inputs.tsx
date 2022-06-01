@@ -1,9 +1,9 @@
-import style from "./Main.module.scss";
+import style from "src/Pages/Inputs/Inputs.module.scss";
 import {useState} from "react";
-import {changeObj,} from "../../Helper/Helper";
-import {usePersistedState} from "../../Hook/Hook";
 
-export function Main() {
+
+export function Inputs() {
+
     /*
     vr1.
     1: [string-noValid]
@@ -17,23 +17,25 @@ export function Main() {
 
     const [inPut, setInPut] = useState('');
     const [outPut, setOutPut] = useState('');
-    const [nameI, setNameI] = usePersistedState<boolean>('nameI', false)
-
 
     const change = (e) => {
         const value = e.target.value
-        setInPut(value)
-        setOutPut(changeObj(value, nameI))
-    }
+        let validType = ''
 
-    const onClick = () => {
-        setNameI(!nameI)
-        setOutPut(changeObj(inPut, nameI))
+        const isObject = RegExp(/\{/).test(validType) && RegExp(/\}/).test(validType)
+
+        if (isObject) {
+            validType = validType.replaceAll(/:\s*(false|true)/g, ': boolean')
+            validType = validType.replaceAll(/:\s*\d+/g, ': number')
+            validType = validType.replaceAll(/:\s*'\b\.\b'/g, ': string') // '' dont work
+        } else validType = 'error'
+
+        setInPut(value)
+        setOutPut(validType)
     }
 
     return (
         <div className={style.wrap}>
-            <button onClick={onClick}>I</button>
             <textarea
                 className={style.area}
                 value={inPut}
