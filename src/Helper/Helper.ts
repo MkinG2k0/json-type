@@ -1,6 +1,7 @@
 import {I} from "./Constant";
 
-export const setType = (objArr, initTabs = 1, addI = false) => {
+export const setType = (object, initTabs = 1, addI = false) => {
+    const objArr = typeof object === 'object' ? Object.entries(object) : object
     let typeObj = '{\n'
     const Interface: string[] = []
     const spaceStr = ' '.repeat(Math.max(initTabs, 0))
@@ -9,10 +10,26 @@ export const setType = (objArr, initTabs = 1, addI = false) => {
         const name = objArr[i][0]
         const value = objArr[i][1]
 
+        const isArray = Array.isArray(value)
+        const isObject = typeof value === 'object'
+
         if (value === null) {
             typeObj += `${spaceStr} ${name} : null,`
-        } else if (typeof value === 'object') {
-            const nextObj = setType(Object.entries(value), 1, addI)
+
+        } else if (isArray) {
+            const obj = allKeyInObj(value)
+            const nextObj = setType(obj || {}, 1, addI)
+            const IName = setNameInter(name, addI)
+            const arrType = allType(value)
+            const strType = formatStrType(arrType, IName)
+
+            typeObj += `${spaceStr} ${name} : ${strType}[],`
+            if (obj) {
+                Interface.push(`\n${spaceStr}${I} ${IName} ${nextObj}`)
+            }
+
+        } else if (isObject) {
+            const nextObj = setType(value, 1, addI)
             const IName = setNameInter(name, addI)
 
             typeObj += `${spaceStr} ${name} : ${IName},`
@@ -25,6 +42,43 @@ export const setType = (objArr, initTabs = 1, addI = false) => {
     typeObj += `${spaceStr}}\n`
     typeObj += Interface.join('\n')
     return typeObj
+}
+
+
+const allType = (arr: any[]) => {
+    const resArrType: any[] = []
+    for (let i = 0; i < arr.length; i++) {
+        const item = arr[i]
+        const typeItem = typeof item
+        if (!resArrType.includes(typeItem)) {
+            resArrType.push(typeItem)
+        }
+    }
+    return resArrType
+
+}
+
+const formatStrType = (arr: any[], nameObj) => {
+
+    const resStrArr = arr.join(' | ').replace('object', nameObj)
+    return arr.length > 1 ? `(${resStrArr})` : resStrArr
+}
+
+const allKeyInObj = (arr: any[]) => {
+    const unique = {}
+    let foundObj = false
+    for (let i = 0; i < arr.length; i++) {
+        const item = arr[i]
+        const obj = Object.entries(item)
+        if (typeof item === 'object') {
+            foundObj = true
+            for (let j = 0; j < obj.length; j++) {
+                const objItem = obj[j]
+                unique[objItem[0]] = objItem[1]
+            }
+        }
+    }
+    return foundObj ? unique : undefined
 }
 
 export const setNameInter = (name, isNameI) => {
@@ -55,14 +109,14 @@ export const validObjString = (value: string) => {
 export const wrapInterface = (str: string) => `declare module namespace { \n ${I} Root ${str}}`
 
 export const changeObj = (value, nameI) => {
-    let res = ''
     try {
         const validStr = validObjString(value)
-        const obj = JSON.parse(validStr)
-        const type = setType(Object.entries(obj), 1, nameI)
-        res = wrapInterface(type)
+        const obj = JSON.parse(value)
+        // const obj = {"Root": JSON.parse(value)}
+        const type = setType(obj, 1, nameI)
+        console.log(type)
+        return wrapInterface(type)
     } catch (e) {
-        res = 'error'
+        return 'error'
     }
-    return res
 }

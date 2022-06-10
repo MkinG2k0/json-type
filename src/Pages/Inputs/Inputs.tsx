@@ -1,6 +1,6 @@
 import style from "src/Pages/Inputs/Inputs.module.scss";
 import {useState} from "react";
-
+import {type} from "os";
 
 export function Inputs() {
 
@@ -14,6 +14,7 @@ export function Inputs() {
     vr2
     1:[string=>string-validType]
     */
+// ! not Work Array
 
     const [inPut, setInPut] = useState('');
     const [outPut, setOutPut] = useState('');
