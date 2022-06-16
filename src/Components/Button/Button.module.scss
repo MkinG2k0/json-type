@@ -1,0 +1,17 @@
+@use '../style/color';
+
+.wrap {
+  font-size: 1.3rem;
+  border: none;
+  padding: .3rem;
+  border-radius: .3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color.$double;
+  box-shadow: 0 0 0 2px white;
+
+  * {
+    fill: white;
+  }
+}

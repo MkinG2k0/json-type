@@ -1,5 +1,6 @@
 import {Main} from "./Pages/Main/Main";
-import './Components/Css/zero.css'
+import 'normalize.css'
+import './Components/style/global.scss'
 
 export function App() {
     return (

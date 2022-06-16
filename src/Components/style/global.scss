@@ -1,0 +1,29 @@
+@use './color';
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+
+body {
+  background: color.$base;
+  height: 100%;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+*::-webkit-scrollbar {
+  width: .8rem;
+}
+
+*::-webkit-scrollbar-track {
+  background: color.$base;
+
+}
+
+*::-webkit-scrollbar-thumb {
+
+  background-color: color.$double;
+}

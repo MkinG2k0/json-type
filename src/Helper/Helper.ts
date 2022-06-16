@@ -1,10 +1,11 @@
 import {I} from "./Constant";
 
-export const setType = (object, initTabs = 1, addI = false) => {
+export const setType = (object, initTabs = 1, addI) => {
     const objArr = typeof object === 'object' ? Object.entries(object) : object
     let typeObj = '{\n'
     const Interface: string[] = []
-    const spaceStr = ' '.repeat(Math.max(initTabs, 0))
+    const spaceStr = '\t'.repeat(Math.max(initTabs, 0))
+    const doubleSpaceStr = '\t\t'.repeat(Math.max(initTabs, 0))
 
     for (let i = 0; i < objArr.length; i++) {
         const name = objArr[i][0]
@@ -14,7 +15,7 @@ export const setType = (object, initTabs = 1, addI = false) => {
         const isObject = typeof value === 'object'
 
         if (value === null) {
-            typeObj += `${spaceStr} ${name} : null,`
+            typeObj += `${doubleSpaceStr} ${name} : null,`
 
         } else if (isArray) {
             const obj = allKeyInObj(value)
@@ -23,7 +24,7 @@ export const setType = (object, initTabs = 1, addI = false) => {
             const arrType = allType(value)
             const strType = formatStrType(arrType, IName)
 
-            typeObj += `${spaceStr} ${name} : ${strType}[],`
+            typeObj += `${spaceStr} ${name}: ${strType}[],`
             if (obj) {
                 Interface.push(`\n${spaceStr}${I} ${IName} ${nextObj}`)
             }
@@ -32,14 +33,14 @@ export const setType = (object, initTabs = 1, addI = false) => {
             const nextObj = setType(value, 1, addI)
             const IName = setNameInter(name, addI)
 
-            typeObj += `${spaceStr} ${name} : ${IName},`
+            typeObj += `${doubleSpaceStr} ${name}: ${IName},`
             Interface.push(`\n${spaceStr}${I} ${IName} ${nextObj}`)
 
-        } else typeObj += `${spaceStr} ${name} : ${typeof value},`
+        } else typeObj += `${doubleSpaceStr} ${name}: ${typeof value},`
         typeObj += '\n'
     }
 
-    typeObj += `${spaceStr}}\n`
+    typeObj += `\t}\n`
     typeObj += Interface.join('\n')
     return typeObj
 }
@@ -106,7 +107,7 @@ export const validObjString = (value: string) => {
 }
 
 
-export const wrapInterface = (str: string) => `declare module namespace { \n ${I} Root ${str}}`
+export const wrapInterface = (str: string) => `declare module namespace { \n \n \t${I} Root ${str}\n}`
 
 export const changeObj = (value, nameI) => {
     try {
@@ -114,9 +115,19 @@ export const changeObj = (value, nameI) => {
         const obj = JSON.parse(value)
         // const obj = {"Root": JSON.parse(value)}
         const type = setType(obj, 1, nameI)
-        console.log(type)
         return wrapInterface(type)
     } catch (e) {
         return 'error'
     }
 }
+declare module namespace {
+
+    interface Root {
+        userId: number,
+        id: number,
+        title: string,
+        body: string,
+    }
+
+}
+

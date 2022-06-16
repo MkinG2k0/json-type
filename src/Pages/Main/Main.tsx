@@ -2,6 +2,10 @@ import style from "./Main.module.scss";
 import {useState} from "react";
 import {changeObj,} from "../../Helper/Helper";
 import {usePersistedState} from "../../Hook/Hook";
+import {CheckBox} from "../../Components/CheckBox/CheckBox";
+import {Area} from "../../Components/Area/Area";
+import {Button} from "../../Components/Button/Button";
+import {Copy} from "../../Icon/Icon";
 
 
 export function Main() {
@@ -21,30 +25,44 @@ export function Main() {
     const [nameI, setNameI] = usePersistedState<boolean>('nameI', false)
 
 
-    const change = (e) => {
-        const value = e.target.value
+    const change = (value) => {
         setInPut(value)
         setOutPut(changeObj(value, nameI))
     }
 
-    const onClick = () => {
-        setNameI(!nameI)
+    const onToggleNameI = (value) => {
+        setNameI(value) // err !value
         setOutPut(changeObj(inPut, nameI))
+    }
+
+    const onCopy = async () => {
+        await navigator.clipboard.writeText(outPut) // уведу кинуть
     }
 
     return (
         <div className={style.wrap}>
-            <button onClick={onClick}>I</button>
-            <textarea
-                className={style.area}
-                value={inPut}
-                onChange={change}
-            />
-            <textarea
-                className={style.area}
-                value={outPut}
-                readOnly={true}
-            />
+            <div className={style.top}>
+                <div className={style.tool}>
+                    <CheckBox
+                        title={'I in Interface name ?'}
+                        onChange={onToggleNameI}
+                        checked={nameI}
+                    />
+                    <CheckBox
+                        title={'Enable types'}
+                        onChange={onToggleNameI}
+                        checked={nameI}
+                    />
+                </div>
+                <Button onClick={onCopy}>
+                    <Copy/>
+                </Button>
+            </div>
+            <div className={style.wrapArea}>
+                <Area value={inPut} onChange={change}/>
+                <Area value={outPut} readOnly/>
+            </div>
         </div>
     );
 }
+
