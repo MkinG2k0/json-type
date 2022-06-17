@@ -1,16 +1,19 @@
-import {FC} from "react";
+import {FC,} from "react";
 import style from "./CheckBox.module.scss";
 
 interface CheckboxBoxProps {
+    name?: string
     title: string
     checked?: boolean
-    onChange?: (checked: boolean) => void
+    onChange?: (checked: boolean, name) => void
 }
 
-export const CheckBox: FC<CheckboxBoxProps> = ({title, onChange, checked}) => {
+export const CheckBox: FC<CheckboxBoxProps> = ({title, name, onChange, checked}) => {
+
 
     const onChangeInput = (e) => {
-        onChange && onChange(e.target.checked)
+        onChange && onChange(e.target.checked, name)
+
     }
 
     return (
@@ -28,6 +31,7 @@ export const CheckBox: FC<CheckboxBoxProps> = ({title, onChange, checked}) => {
 }
 
 CheckBox.defaultProps = {
+    name: 'CheckBox',
     onChange: () => {
     },
     checked: false

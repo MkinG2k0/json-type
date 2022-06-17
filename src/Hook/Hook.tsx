@@ -8,7 +8,7 @@ export function usePersistedState<TState>(keyToPersistWith: string, defaultState
         get<TState>(keyToPersistWith).then(retrievedState =>
             // If a value is retrieved then use it; otherwise default to defaultValue
             setState(retrievedState ?? defaultState));
-    }, [keyToPersistWith, setState, defaultState]);
+    }, [keyToPersistWith, setState,]);
 
     const setPersistedValue = useCallback((newValue: TState) => {
         setState(newValue);
@@ -18,3 +18,10 @@ export function usePersistedState<TState>(keyToPersistWith: string, defaultState
     return [state, setPersistedValue] as const;
 }
 
+export const useMount = () => {
+    const [state, setState] = useState(false);
+    useEffect(() => {
+        setState(true)
+    }, []);
+    return state
+}

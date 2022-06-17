@@ -1,13 +1,26 @@
 import style from './Area.module.scss'
-import {FC} from 'react'
+import {FC, useEffect, useRef, useState} from 'react'
+import {useMount} from "../../Hook/Hook";
 
 interface AreaProps {
     value: string
     onChange?: (value: string) => void
     readOnly?: boolean
+    adaptiveHeight?: boolean
+
 }
 
-export const Area: FC<AreaProps> = ({value, readOnly, onChange}) => {
+export const Area: FC<AreaProps> = ({value, readOnly, adaptiveHeight, onChange}) => {
+    const ref = useRef<HTMLTextAreaElement>(null);
+    const [height, setHeight] = useState('');
+    const firsMount = useMount()
+
+    useEffect(() => {
+        if (ref.current && adaptiveHeight && firsMount) {
+            setHeight(25 + ref.current.scrollHeight + 'px')
+        }
+    }, [value]);
+
 
     const onChangeValue = (e) => {
         onChange && onChange(e.target.value)
@@ -17,6 +30,8 @@ export const Area: FC<AreaProps> = ({value, readOnly, onChange}) => {
         <textarea
             className={style.wrap}
             value={value}
+            ref={ref}
+            style={{height}}
             onChange={onChangeValue}
             readOnly={readOnly}
         />
@@ -24,7 +39,10 @@ export const Area: FC<AreaProps> = ({value, readOnly, onChange}) => {
 }
 
 Area.defaultProps = {
+    adaptiveHeight: false,
+
     readOnly: false,
     onChange: () => {
     },
 }
+

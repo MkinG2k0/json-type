@@ -1,11 +1,11 @@
 import style from "./Main.module.scss";
-import {useState} from "react";
-import {changeObj,} from "../../Helper/Helper";
+import {useEffect, useState} from "react";
 import {usePersistedState} from "../../Hook/Hook";
 import {CheckBox} from "../../Components/CheckBox/CheckBox";
 import {Area} from "../../Components/Area/Area";
 import {Button} from "../../Components/Button/Button";
 import {Copy} from "../../Icon/Icon";
+import {Parse, Preset} from "../../Helper/Helper";
 
 
 export function Main() {
@@ -22,17 +22,19 @@ export function Main() {
 
     const [inPut, setInPut] = useState('');
     const [outPut, setOutPut] = useState('');
-    const [nameI, setNameI] = usePersistedState<boolean>('nameI', false)
+    const [preset, setPreset] = usePersistedState<Preset>('preset', {})
 
+    const parse = new Parse(preset)
+    useEffect(() => {
+        if (inPut) {
+            parse.setStr(inPut)
+            setOutPut(parse.strType)
+        }
+    }, [inPut, preset]);
 
-    const change = (value) => {
-        setInPut(value)
-        setOutPut(changeObj(value, nameI))
-    }
-
-    const onToggleNameI = (value) => {
-        setNameI(value) // err !value
-        setOutPut(changeObj(inPut, nameI))
+    const onTogglePreset = (value: boolean, name: string) => {
+        setPreset({...preset, [name]: value})
+        setOutPut(parse.strType)
     }
 
     const onCopy = async () => {
@@ -45,13 +47,15 @@ export function Main() {
                 <div className={style.tool}>
                     <CheckBox
                         title={'I in Interface name ?'}
-                        onChange={onToggleNameI}
-                        checked={nameI}
+                        name={'nameI'}
+                        onChange={onTogglePreset}
+                        checked={preset?.nameI}
                     />
                     <CheckBox
                         title={'Enable types'}
-                        onChange={onToggleNameI}
-                        checked={nameI}
+                        name={'types'}
+                        onChange={onTogglePreset}
+                        checked={preset?.types}
                     />
                 </div>
                 <Button onClick={onCopy}>
@@ -59,8 +63,8 @@ export function Main() {
                 </Button>
             </div>
             <div className={style.wrapArea}>
-                <Area value={inPut} onChange={change}/>
-                <Area value={outPut} readOnly/>
+                <Area value={inPut} onChange={setInPut}/>
+                <Area value={outPut} readOnly adaptiveHeight/>
             </div>
         </div>
     );
