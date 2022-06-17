@@ -6,6 +6,7 @@ import {Area} from "../../Components/Area/Area";
 import {Button} from "../../Components/Button/Button";
 import {Copy} from "../../Icon/Icon";
 import {Parse, Preset} from "../../Helper/Helper";
+import {Tools} from "../../Components/Tools/Tools";
 
 
 export function Main() {
@@ -25,6 +26,7 @@ export function Main() {
     const [preset, setPreset] = usePersistedState<Preset>('preset', {})
 
     const parse = new Parse(preset)
+
     useEffect(() => {
         if (inPut) {
             parse.setStr(inPut)
@@ -32,10 +34,6 @@ export function Main() {
         }
     }, [inPut, preset]);
 
-    const onTogglePreset = (value: boolean, name: string) => {
-        setPreset({...preset, [name]: value})
-        setOutPut(parse.strType)
-    }
 
     const onCopy = async () => {
         await navigator.clipboard.writeText(outPut) // уведу кинуть
@@ -45,18 +43,7 @@ export function Main() {
         <div className={style.wrap}>
             <div className={style.top}>
                 <div className={style.tool}>
-                    <CheckBox
-                        title={'I in Interface name ?'}
-                        name={'nameI'}
-                        onChange={onTogglePreset}
-                        checked={preset?.nameI}
-                    />
-                    <CheckBox
-                        title={'Enable types'}
-                        name={'types'}
-                        onChange={onTogglePreset}
-                        checked={preset?.types}
-                    />
+                    <Tools setPreset={setPreset} preset={preset}/>
                 </div>
                 <Button onClick={onCopy}>
                     <Copy/>
