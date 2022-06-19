@@ -10,6 +10,7 @@ export interface Preset {
 
 export class Parse {
     preset: Preset = {}
+    obj = {}
     initStr = ''
     strType = ''
 
@@ -18,12 +19,10 @@ export class Parse {
     }
 
 
-    private setType = (object, initTabs = 1) => {
+    private setType = (object) => {
         const objArr = typeof object === 'object' ? Object.entries(object) : object
         let typeObj = '{\n'
         const Interface: string[] = []
-        const spaceStr = '\t'.repeat(Math.max(initTabs, 0))
-        const doubleSpaceStr = '\t\t'.repeat(Math.max(initTabs, 0))
 
         for (let i = 0; i < objArr.length; i++) {
             const name = objArr[i][0]
@@ -33,13 +32,13 @@ export class Parse {
             const isObject = typeof value === 'object'
 
             if (value === null) {
-                typeObj += this.setNull(spaceStr, name)
+                typeObj += this.setNull(name)
             } else if (isArray) {
-                typeObj += this.setArray(value, name, Interface, spaceStr)
+                typeObj += this.setArray(value, name, Interface)
             } else if (isObject) {
-                typeObj += this.setObject(value, name, Interface, spaceStr, typeObj, doubleSpaceStr)
+                typeObj += this.setObject(value, name, Interface, typeObj)
             } else {
-                typeObj += this.setPrimitive(value, name, doubleSpaceStr)
+                typeObj += this.setPrimitive(value, name)
             }
             typeObj += '\n'
         }
@@ -49,46 +48,62 @@ export class Parse {
         return typeObj
     }
 
+    //Set Valid String Type
+
+    private formatStr = (space, name, separator, type, postFix = ',') =>
+        `${space}\t${name}${separator} ${type}${this.preset.commas ? postFix : ''}`
+
+    private validStrInterface = (name, type) => this.formatStr('\n', `${I} ${name}`, '', type)
+
+    private validStrTypes = (name, type) => this.formatStr('\n', `${T} ${name}`, '', type)
+
+    private validStrArray = (name, type) => this.formatStr('\t', name, ':', `${type}[]`)
+
+    private validStrPrimitive = (name, type) => this.formatStr('\t', name, ':', type)
+
+    private validStrObject = (name, type) => this.formatStr('\t', name, ':', type)
+
+    private validStrNull = (name) => this.formatStr('\t', name, ':', 'null')
+
     // Set Type
 
-    private setArray = (value, name, Interface, spaceStr) => {
+    private setArray = (value, name, Interface) => {
         const obj = this.allKeyInObj(value)
         const nextObj = this.setType(obj || {})
         const IName = this.setNameInter(name)
         const arrType = this.allType(value)
         const strType = this.formatStrType(arrType, IName)
 
-        if (obj) {
-            Interface.push(`\n${spaceStr}${I} ${IName} ${nextObj}`)
-        }
+        if (obj) Interface.push(`\n${I} ${IName} ${nextObj}`)
 
-        if (this.preset.types) {
-            return this.setTypes(spaceStr, name, strType, Interface)
+        if (this.preset.types && strType.includes('(')) {
+            return this.setTypes(name, strType, Interface)
         } else {
-            return `${spaceStr} ${name}: ${strType}[],`
+            return this.validStrArray(name, strType)
         }
     }
 
-    private setTypes = (spaceStr, name, strType, Interface) => {
+    private setTypes = (name, strType, Interface) => {
         const Name = this.setNameType(name)
-        const validType = strType.replace('(', '').replace(')', '')
+        const type = strType.replace('(', '').replace(')', '')
 
-        Interface.push(`\n${spaceStr}${T} ${Name} = ${validType}`)
+        Interface.push(this.validStrTypes(Name, type))
 
-        return `\t${spaceStr} ${name}: ${Name}[],`
+        return this.validStrArray(name, Name)
     }
 
-    private setNull = (doubleSpaceStr, name) => `${doubleSpaceStr} ${name} : null,`
+    private setNull = (name) => this.validStrNull(name)
 
-    private setObject = (value, name, Interface, spaceStr, typeObj, doubleSpaceStr) => {
+    private setObject = (value, name, Interface, typeObj) => {
         const nextObj = this.setType(value)
         const IName = this.setNameInter(name)
 
-        Interface.push(`\n${spaceStr}${I} ${IName} ${nextObj}`)
-        return `${doubleSpaceStr} ${name}: ${IName},`
+        Interface.push(this.validStrInterface(IName, nextObj))
+
+        return this.validStrObject(name, IName)
     }
 
-    private setPrimitive = (value, name, doubleSpaceStr) => `${doubleSpaceStr} ${name}: ${typeof value},`
+    private setPrimitive = (value, name) => this.validStrPrimitive(name, typeof value)
 
     // Add Prefix
 
@@ -171,10 +186,10 @@ export class Parse {
     public setStr = (value: string) => {
         try {
             this.initStr = value
-            // console.log(this.initStr)
-            // console.log(value)
             // const validStr = this.validObjString(value)
             const obj = JSON.parse(value)
+            // console.log(obj)
+            this.obj = obj
             // const obj = {"Root": JSON.parse(value)}
             const type = this.setType(obj)
             this.strType = this.wrapInterface(type)
@@ -183,3 +198,4 @@ export class Parse {
         }
     }
 }
+

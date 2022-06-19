@@ -1,9 +1,10 @@
 import {FC} from 'react'
 import {CheckBox} from "../CheckBox/CheckBox";
+import {Preset} from "../../Helper/Helper";
 
 interface ToolsProps {
     setPreset: any
-    preset: any
+    preset?: Preset
 }
 
 export const Tools: FC<ToolsProps> = ({setPreset, preset}) => {
@@ -21,10 +22,16 @@ export const Tools: FC<ToolsProps> = ({setPreset, preset}) => {
                 checked={preset?.nameI}
             />
             <CheckBox
-                title={'Enable types'}
+                title={'Types'}
                 name={'types'}
                 onChange={onTogglePreset}
                 checked={preset?.types}
+            />
+            <CheckBox
+                title={'Commas'}
+                name={'commas'}
+                onChange={onTogglePreset}
+                checked={preset?.commas}
             />
         </>
     )

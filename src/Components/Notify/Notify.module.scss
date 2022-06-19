@@ -1,0 +1,20 @@
+@use '../style/color';
+
+.wrapNotify {
+  position: absolute;
+  left: 50%;
+  top: -50%;
+
+  transform: translateX(-50%);
+
+  background: color.$blue;
+  color: white;
+  padding: .5rem;
+  border-radius: .5rem;
+
+  transition: all .3s;
+}
+
+.notifyActive {
+  top: 2rem
+}
