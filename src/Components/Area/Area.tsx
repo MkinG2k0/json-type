@@ -17,7 +17,8 @@ export const Area: FC<AreaProps> = ({value, readOnly, adaptiveHeight, onChange})
 
     useEffect(() => {
         if (ref.current && adaptiveHeight && firsMount) {
-            setHeight(25 + ref.current.scrollHeight + 'px')
+            setHeight(10 + ref.current.scrollHeight + 'px')
+            ref.current.style.height = '0px'
         }
     }, [value]);
 

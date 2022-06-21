@@ -1,6 +1,5 @@
 import {I, T} from "./Constant";
 
-
 export interface Preset {
     nameI?: boolean
     nameT?: boolean
@@ -14,15 +13,15 @@ export class Parse {
     initStr = ''
     strType = ''
 
+    private lineType: string[] = []
+
     constructor(preset?: Preset) {
         if (preset) this.preset = preset
     }
 
-
     private setType = (object) => {
         const objArr = typeof object === 'object' ? Object.entries(object) : object
-        let typeObj = '{\n'
-        const Interface: string[] = []
+        let typeObj = ''
 
         for (let i = 0; i < objArr.length; i++) {
             const name = objArr[i][0]
@@ -30,21 +29,20 @@ export class Parse {
 
             const isArray = Array.isArray(value)
             const isObject = typeof value === 'object'
+            const isNull = value === null
 
-            if (value === null) {
-                typeObj += this.setNull(name)
-            } else if (isArray) {
-                typeObj += this.setArray(value, name, Interface)
-            } else if (isObject) {
-                typeObj += this.setObject(value, name, Interface, typeObj)
-            } else {
-                typeObj += this.setPrimitive(value, name)
-            }
+            if (isNull) typeObj += this.setNull(name)
+            else if (isArray) typeObj += this.setArray(value, name)
+            else if (isObject) typeObj += this.setObject(value, name)
+            else typeObj += this.setPrimitive(value, name)
+
             typeObj += '\n'
         }
 
-        typeObj += `\t}\n`
-        typeObj += Interface.join('\n')
+        typeObj = `{\n${typeObj}\t}\n`
+        typeObj += this.lineType.join('\n')
+        this.lineType = []
+
         return typeObj
     }
 
@@ -53,9 +51,9 @@ export class Parse {
     private formatStr = (space, name, separator, type, postFix = ',') =>
         `${space}\t${name}${separator} ${type}${this.preset.commas ? postFix : ''}`
 
-    private validStrInterface = (name, type) => this.formatStr('\n', `${I} ${name}`, '', type)
+    private validStrInterface = (name, type) => this.formatStr('\n', `${I} ${name}`, '', type, '')
 
-    private validStrTypes = (name, type) => this.formatStr('\n', `${T} ${name}`, '', type)
+    private validStrTypes = (name, type) => this.formatStr('', `${T} ${name}`, ' =', type)
 
     private validStrArray = (name, type) => this.formatStr('\t', name, ':', `${type}[]`)
 
@@ -67,38 +65,38 @@ export class Parse {
 
     // Set Type
 
-    private setArray = (value, name, Interface) => {
+    private setArray = (value, name) => {
         const obj = this.allKeyInObj(value)
         const nextObj = this.setType(obj || {})
         const IName = this.setNameInter(name)
         const arrType = this.allType(value)
         const strType = this.formatStrType(arrType, IName)
 
-        if (obj) Interface.push(`\n${I} ${IName} ${nextObj}`)
+        if (obj) this.lineType.push(this.validStrInterface(IName, nextObj))
 
         if (this.preset.types && strType.includes('(')) {
-            return this.setTypes(name, strType, Interface)
+            return this.setTypes(name, strType)
         } else {
             return this.validStrArray(name, strType)
         }
     }
 
-    private setTypes = (name, strType, Interface) => {
+    private setTypes = (name, strType) => {
         const Name = this.setNameType(name)
         const type = strType.replace('(', '').replace(')', '')
 
-        Interface.push(this.validStrTypes(Name, type))
+        this.lineType.push(this.validStrTypes(Name, type) + '\n') // ugly
 
         return this.validStrArray(name, Name)
     }
 
     private setNull = (name) => this.validStrNull(name)
 
-    private setObject = (value, name, Interface, typeObj) => {
+    private setObject = (value, name) => {
         const nextObj = this.setType(value)
         const IName = this.setNameInter(name)
 
-        Interface.push(this.validStrInterface(IName, nextObj))
+        this.lineType.push(this.validStrInterface(IName, nextObj))
 
         return this.validStrObject(name, IName)
     }
@@ -177,7 +175,7 @@ export class Parse {
         return newLine.replaceAll('\'', '"').replaceAll('\n', '')
     }
 
-    private wrapInterface = (str: string) => `declare module namespace { \n \n \t${I} Root ${str}\n}`
+    private wrapInterface = (str: string) => `declare module namespace {\n\n\t${I} Root ${str}\n}`
 
     public update = () => {
         this.setStr(this.initStr)
@@ -198,4 +196,3 @@ export class Parse {
         }
     }
 }
-

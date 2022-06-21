@@ -22,6 +22,12 @@ export const Tools: FC<ToolsProps> = ({setPreset, preset}) => {
                 checked={preset?.nameI}
             />
             <CheckBox
+                title={'T in Type name ?'}
+                name={'nameT'}
+                onChange={onTogglePreset}
+                checked={preset?.nameT}
+            />
+            <CheckBox
                 title={'Types'}
                 name={'types'}
                 onChange={onTogglePreset}
@@ -36,3 +42,4 @@ export const Tools: FC<ToolsProps> = ({setPreset, preset}) => {
         </>
     )
 }
+

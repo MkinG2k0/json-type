@@ -20,8 +20,7 @@ export function Main() {
     vr2
     1:[string=>string-validType]
     */
-
-    const [inPut, setInPut] = useState('{\n' +
+    const test = '{\n' +
         '    "id": 1,\n' +
         '    "name": "Leanne Graham",\n' +
         '    "username": "Bret",\n' +
@@ -43,7 +42,11 @@ export function Main() {
         '      "catchPhrase": "Multi-layered client-server neural-net",\n' +
         '      "bs": "harness real-time e-markets"\n' +
         '    }\n' +
-        '  }');
+        '  }'
+
+    const test2 = '{"asd":[1,2,3,"",{"zzz":{"ggg":123}}],"bb":false}'
+
+    const [inPut, setInPut] = useState(test);
 
     const [outPut, setOutPut] = useState('');
     const [notify, setNotify] = useState(false);
