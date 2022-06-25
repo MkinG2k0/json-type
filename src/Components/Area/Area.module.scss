@@ -3,10 +3,10 @@
 .wrap {
   background: color.$triple;
   color: white;
-  font-size: 1.4rem;
-  padding: .3rem;
+  font-size: 1.2rem;
+  padding: .5rem;
   resize: vertical;
-  height: 100%;
-  min-height: 40vh;
+  height: calc(100vh - 10rem);
+  //min-height: 40vh;
   width: 100%;
 }

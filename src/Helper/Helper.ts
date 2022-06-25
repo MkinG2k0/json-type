@@ -7,7 +7,12 @@ export interface Preset {
     commas?: boolean
 }
 
+type typeValue = 'null' | 'array' | 'object' | 'primitive'
+
+
 export class Parse {
+    outArrType: any[] = []
+    inArrType: any[] = []
     preset: Preset = {}
     obj = {}
     initStr = ''
@@ -19,7 +24,29 @@ export class Parse {
         if (preset) this.preset = preset
     }
 
-    private setType = (object) => {
+    public setType = (name, value) => {
+
+        const type = this.getType(value)
+
+        if (type === 'null') return this.setNull(name)
+        else if (type === 'array') return this.setArray(name, value)
+        else if (type === 'object') return this.setObject(name, value)
+        else if (type === 'primitive') return this.setPrimitive(name, value)
+        else return 'error'
+    }
+
+    public getType = (value): typeValue => {
+        const isArray = Array.isArray(value)
+        const isObject = typeof value === 'object'
+        const isNull = value === null
+
+        if (isNull) return 'null'
+        else if (isArray) return 'array'
+        else if (isObject) return 'object'
+        else return 'primitive'
+    }
+
+    private setTypeToStr = (object) => {
         const objArr = typeof object === 'object' ? Object.entries(object) : object
         let typeObj = ''
 
@@ -27,14 +54,7 @@ export class Parse {
             const name = objArr[i][0]
             const value = objArr[i][1]
 
-            const isArray = Array.isArray(value)
-            const isObject = typeof value === 'object'
-            const isNull = value === null
-
-            if (isNull) typeObj += this.setNull(name)
-            else if (isArray) typeObj += this.setArray(value, name)
-            else if (isObject) typeObj += this.setObject(value, name)
-            else typeObj += this.setPrimitive(value, name)
+            typeObj += this.setType(name, value)
 
             typeObj += '\n'
         }
@@ -46,9 +66,38 @@ export class Parse {
         return typeObj
     }
 
+    //
+
+    private toArray = (obj, arr) => {
+        return [['Root', this.toArrayType(obj, arr)], ...arr]
+    }
+
+    private toArrayType = (obj: object, gArr: any[]) => {
+        const arr: any[] = []
+
+        for (const [name, type] of Object.entries(obj)) {
+            const typeStr = this.setType(name, type).split(':')[1].trim() // ?
+            const getType = this.getType(type)
+
+            if ((getType === 'object')) {
+                const nameI = this.setNameInter(name)
+                arr.push([name, nameI])
+
+                gArr.unshift([nameI, this.toArrayType(type, gArr)])
+            }
+                // else if (getType === '') {
+            // }
+            else {
+                arr.push([name, typeStr])
+            }
+        }
+
+        return arr
+    }
+
     //Set Valid String Type
 
-    private formatStr = (space, name, separator, type, postFix = ',') =>
+    private formatStr = (space, name, separator, type, postFix = ';') =>
         `${space}\t${name}${separator} ${type}${this.preset.commas ? postFix : ''}`
 
     private validStrInterface = (name, type) => this.formatStr('\n', `${I} ${name}`, '', type, '')
@@ -65,9 +114,9 @@ export class Parse {
 
     // Set Type
 
-    private setArray = (value, name) => {
+    private setArray = (name, value) => {
         const obj = this.allKeyInObj(value)
-        const nextObj = this.setType(obj || {})
+        const nextObj = this.setTypeToStr(obj || {})
         const IName = this.setNameInter(name)
         const arrType = this.allType(value)
         const strType = this.formatStrType(arrType, IName)
@@ -92,8 +141,8 @@ export class Parse {
 
     private setNull = (name) => this.validStrNull(name)
 
-    private setObject = (value, name) => {
-        const nextObj = this.setType(value)
+    private setObject = (name, value) => {
+        const nextObj = this.setTypeToStr(value)
         const IName = this.setNameInter(name)
 
         this.lineType.push(this.validStrInterface(IName, nextObj))
@@ -101,7 +150,7 @@ export class Parse {
         return this.validStrObject(name, IName)
     }
 
-    private setPrimitive = (value, name) => this.validStrPrimitive(name, typeof value)
+    private setPrimitive = (name, value) => this.validStrPrimitive(name, typeof value)
 
     // Add Prefix
 
@@ -186,10 +235,13 @@ export class Parse {
             this.initStr = value
             // const validStr = this.validObjString(value)
             const obj = JSON.parse(value)
+            this.inArrType = this.toArray(obj, this.inArrType)
             // console.log(obj)
             this.obj = obj
             // const obj = {"Root": JSON.parse(value)}
-            const type = this.setType(obj)
+            const type = this.setTypeToStr(obj)
+            this.outArrType = this.toArray(obj, this.outArrType)
+
             this.strType = this.wrapInterface(type)
         } catch (e) {
             this.strType = 'error'

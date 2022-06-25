@@ -1,0 +1,30 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: .5rem;
+
+  .rootWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-left: 2rem;
+
+    .wrapInterface {
+      display: flex;
+      flex-direction: column;
+      //gap: .5rem;
+
+      .line {
+        //display: flex;
+        //gap: .5rem;
+      }
+
+      .type {
+        padding-left: 2rem;
+      }
+    }
+  }
+
+
+}
